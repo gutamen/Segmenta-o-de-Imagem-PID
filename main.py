@@ -2,7 +2,7 @@ import PIL
 import cv2
 import numpy as np
 
-imagem = cv2.imread('1.png', cv2.IMREAD_GRAYSCALE)
+imagem = cv2.imread('tijolo.png', cv2.IMREAD_GRAYSCALE)
 #imagem = cv2.cvtColor(imagem, cv2.COLOR_BGR2GRAY)
 #imagem = cv2.GaussianBlur(imagem, (5, 5), 0)
 #_, imagem = cv2.threshold(imagem, 127, 255, cv2.THRESH_BINARY)
@@ -11,11 +11,24 @@ imagem = cv2.imread('1.png', cv2.IMREAD_GRAYSCALE)
 grad_x = cv2.Sobel(imagem, cv2.CV_64F, 1, 0, ksize=3)
 grad_y = cv2.Sobel(imagem, cv2.CV_64F, 0, 1, ksize=3)
 
+
+# Valores
+limiarMagnetude = 200   # entre 0 e 255
+limiarAngular = 0       # ângulo necessário para considerar na linha
+
+
 # Calcular a magnitude e a direção do gradiente
 magnitude = np.sqrt(grad_x**2 + grad_y**2)
 direcao = np.arctan2(grad_y, grad_x)
+altura, largura = imagem.shape[:2]
+
+for i in range(0, largura):
+    for j in range(0, altura):
+        break
+
 
 magnitude_normalizada = cv2.normalize(magnitude, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
+
 
 cv2.imshow('Imagem PNG', magnitude_normalizada)
 cv2.waitKey(0)
