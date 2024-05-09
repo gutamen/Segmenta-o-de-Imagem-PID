@@ -1,8 +1,7 @@
-import PIL
 import cv2
 import numpy as np
 
-def bordasLocais(imagem, limiarMagnitude = 80, anguloSolicitado = 0, limiarAngular = 10):
+def process(imagem, limiarMagnitude = 80, anguloSolicitado = 0, limiarAngular = 10):
     grad_x = cv2.Sobel(imagem, cv2.CV_64F, 1, 0, ksize=3)
     grad_y = cv2.Sobel(imagem, cv2.CV_64F, 0, 1, ksize=3)
 
