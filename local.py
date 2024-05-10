@@ -8,7 +8,7 @@ import numpy as np
 #       4 = 135º
 #       5 = 180º
 
-def process(imagem, limiarMagnitude = 80, anguloSolicitado = 1, limiarAngular = 10, limiarReconstrucao = 10):
+def process(imagem, limiarMagnitude = 80, anguloSolicitado = 4, limiarAngular = 10, limiarReconstrucao = 10):
     grad_x = cv2.Sobel(imagem, cv2.CV_64F, 1, 0, ksize=3)
     grad_y = cv2.Sobel(imagem, cv2.CV_64F, 0, 1, ksize=3)
 
@@ -60,13 +60,13 @@ def process(imagem, limiarMagnitude = 80, anguloSolicitado = 1, limiarAngular = 
             else:
                 magnitude[i][j] = 0
 #            print(direcao[i][j])
-    
     if len(rad) == 1:
-        if rad[0] == 1:
-            k = 0
-            buraco = False
-            comeco = True
+        if 1.5 <= rad[0] <= 1.6:
+            
             for i in range(0, altura - 1):
+                k = 0
+                buraco = False
+                comeco = True
                 for j in range(0, largura - 1):       
                     if magnitude[i][j] > 0 and not buraco:
                         comeco = False
@@ -79,11 +79,33 @@ def process(imagem, limiarMagnitude = 80, anguloSolicitado = 1, limiarAngular = 
                             k = 0
                     elif magnitude[i][j] > 0 and buraco:
                         buraco = False
-                        
-                        
+                        for l in range(k, 0, -1):
+                            magnitude[i][j - 1 - l] = 255
+                        k = 0
+                        comeco = True
 
+                    if buraco == True and j == largura - 1 and k > 0:
+                        for l in range(k, 0, -1):
+                            magnitude[i][j - 1 - l] = 255
 
+    anguloRotacao = 45
+    centro = (largura // 2, altura // 2)
+    alturaRotacionada = int(largura * np.abs(np.sin(np.radians(anguloRotacao))) + altura * np.abs(np.cos(np.radians(anguloRotacao))))
+    larguraRotacionada = int(altura * np.abs(np.sin(np.radians(anguloRotacao))) + largura * np.abs(np.cos(np.radians(anguloRotacao))))
+    matrizRotacao = cv2.getRotationMatrix2D(centro, anguloRotacao, 1.0)
+    matrizRotacao[0, 2] += (larguraRotacionada - largura) / 2
+    matrizRotacao[1, 2] += (alturaRotacionada - altura) / 2
 
+    centro = (larguraRotacionada // 2, alturaRotacionada // 2)
+    magnitude = cv2.warpAffine(magnitude, matrizRotacao, (larguraRotacionada, alturaRotacionada), borderMode = cv2.BORDER_CONSTANT, borderValue = (0))        
+#    print(magnitude.shape[:2])
+    matrizRotacaoInversa = cv2.getRotationMatrix2D(centro, -anguloRotacao, 1.0)
+
+    magnitude = cv2.warpAffine(magnitude, matrizRotacaoInversa, (larguraRotacionada, alturaRotacionada))       
+    
+    mid_x, mid_y = int(larguraRotacionada/2), int(alturaRotacionada/2)
+    cw2, ch2 = int(largura/2), int(altura/2)
+    return magnitude[mid_y-ch2:mid_y+ch2, mid_x-cw2:mid_x+cw2]
 
 #    magnitude_normalizada = cv2.normalize(magnitude, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
 
@@ -95,7 +117,4 @@ def process(imagem, limiarMagnitude = 80, anguloSolicitado = 1, limiarAngular = 
 #    np.savetxt('imagem_binaria.txt', imagem/255, fmt='%d')
 #    print(imagem/255)
 
-
-    return magnitude
-
-
+    
