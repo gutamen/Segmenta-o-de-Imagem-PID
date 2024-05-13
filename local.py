@@ -1,14 +1,45 @@
 import cv2
 import numpy as np
 
+
+def correcao(imagem, rad, limiarReconstrucao):
+    altura, largura = imagem.shape[:2]
+    if 1.5 <= rad[0] <= 1.6:
+        for i in range(0, altura - 1):
+            k = 0
+            buraco = False
+            comeco = True
+            for j in range(0, largura - 1):       
+                if imagem[i][j] > 0 and not buraco:
+                    comeco = False
+                elif imagem[i][j] == 0 and not comeco:
+                    k += 1
+                    buraco = True 
+                    if k > limiarReconstrucao:
+                        comeco = True
+                        buraco = False
+                        k = 0
+                elif imagem[i][j] > 0 and buraco:
+                    buraco = False
+                    for l in range(k, 0, -1):
+#                        print(str(i) + ' ' + str(j))
+                        imagem[i][j - l] = 255
+                    k = 0
+                    comeco = True
+
+                if buraco and j == largura - 1 and k > 0:
+                    for l in range(k, 0, -1):
+                        imagem[i][j - l] = 255
+    return imagem
+
 #   anguloSolicitado
 #       1 = 0º
 #       2 = 45º
 #       3 = 90º
 #       4 = 135º
 #       5 = 180º
-
-def process(imagem, limiarMagnitude = 80, anguloSolicitado = 4, limiarAngular = 10, limiarReconstrucao = 10):
+#       6 = Todos de 45º em 45º
+def process(imagem, limiarMagnitude = 80, anguloSolicitado = 3, limiarAngular = 10, limiarReconstrucao = 10):
     grad_x = cv2.Sobel(imagem, cv2.CV_64F, 1, 0, ksize=3)
     grad_y = cv2.Sobel(imagem, cv2.CV_64F, 0, 1, ksize=3)
 
@@ -47,46 +78,24 @@ def process(imagem, limiarMagnitude = 80, anguloSolicitado = 4, limiarAngular = 
     rad = np.deg2rad(anguloSolicitado)
     limiarRad = np.deg2rad(limiarAngular)
     
-#    print(len(rad))
+#    print(rad)
+#    print(altura, largura)
 
 #    magnitude_normalizada = cv2.normalize(magnitude, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
     magnitude = cv2.normalize(magnitude, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
 
-    for i in range(0, altura - 1):
-        for j in range(0, largura - 1):
-            if magnitude[i][j] >= limiarMagnitude and ((rad - limiarRad <= direcao[i][j]).any() and (direcao[i][j] <= rad + limiarRad).any()):
-                magnitude[i][j] = 255
-#                magnitude[i][j] = magnitude[i][j] 
-            else:
-                magnitude[i][j] = 0
-#            print(direcao[i][j])
-    if len(rad) == 1:
-        if 1.5 <= rad[0] <= 1.6:
-            
-            for i in range(0, altura - 1):
-                k = 0
-                buraco = False
-                comeco = True
-                for j in range(0, largura - 1):       
-                    if magnitude[i][j] > 0 and not buraco:
-                        comeco = False
-                    elif magnitude[i][j] == 0 and not comeco:
-                        k += 1
-                        buraco = True 
-                        if k + 1 > limiarReconstrucao:
-                            comeco = True
-                            buraco = False
-                            k = 0
-                    elif magnitude[i][j] > 0 and buraco:
-                        buraco = False
-                        for l in range(k, 0, -1):
-                            magnitude[i][j - 1 - l] = 255
-                        k = 0
-                        comeco = True
-
-                    if buraco == True and j == largura - 1 and k > 0:
-                        for l in range(k, 0, -1):
-                            magnitude[i][j - 1 - l] = 255
+    for l in range(0, len(rad)):
+        for i in range(0, altura - 1):
+            for j in range(0, largura - 1):
+                if magnitude[i][j] >= limiarMagnitude and (rad[l] - limiarRad <= direcao[i][j] <= rad[l] + limiarRad):
+                    magnitude[i][j] = 255
+    #                magnitude[i][j] = magnitude[i][j] 
+                else:
+                    magnitude[i][j] = 0
+#                print(direcao[i][j])
+        magnitude = correcao(magnitude, rad, limiarReconstrucao)
+    
+    return magnitude
 
     anguloRotacao = 45
     centro = (largura // 2, altura // 2)
@@ -97,16 +106,16 @@ def process(imagem, limiarMagnitude = 80, anguloSolicitado = 4, limiarAngular = 
     matrizRotacao[1, 2] += (alturaRotacionada - altura) / 2
 
     centro = (larguraRotacionada // 2, alturaRotacionada // 2)
-    magnitude = cv2.warpAffine(magnitude, matrizRotacao, (larguraRotacionada, alturaRotacionada), borderMode = cv2.BORDER_CONSTANT, borderValue = (0))        
-#    print(magnitude.shape[:2])
+    magnitude = cv2.warpAffine(magnitude, matrizRotacao, (larguraRotacionada, alturaRotacionada), borderMode = cv2.BORDER_CONSTANT, borderValue = (0), flags=cv2.INTER_NEAREST)        
+    print(magnitude.shape[:2])
     matrizRotacaoInversa = cv2.getRotationMatrix2D(centro, -anguloRotacao, 1.0)
 
-    magnitude = cv2.warpAffine(magnitude, matrizRotacaoInversa, (larguraRotacionada, alturaRotacionada))       
+    magnitude = cv2.warpAffine(magnitude, matrizRotacaoInversa, (larguraRotacionada, alturaRotacionada), flags=cv2.INTER_NEAREST)       
     
     mid_x, mid_y = int(larguraRotacionada/2), int(alturaRotacionada/2)
     cw2, ch2 = int(largura/2), int(altura/2)
-    return magnitude[mid_y-ch2:mid_y+ch2, mid_x-cw2:mid_x+cw2]
 
+    return magnitude[mid_y-ch2:mid_y+ch2, mid_x-cw2:mid_x+cw2]
 #    magnitude_normalizada = cv2.normalize(magnitude, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
 
 
