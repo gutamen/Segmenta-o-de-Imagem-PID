@@ -168,19 +168,19 @@ def correcao(imagem, rad, limiarReconstrucao):
 #       3 = 90º
 #       4 = 135º
 #       5 = Todos de 45º em 45º
-def process(imagem, limiarMagnitude = 80, anguloSolicitado = 1, limiarAngular = 10, limiarReconstrucao = 20):
+def process(imagem, limiarMagnitude = 80, anguloSolicitado = 'todos', limiarAngular = 10, limiarReconstrucao = 20):
     grad_x = cv2.Sobel(imagem, cv2.CV_64F, 1, 0, ksize=3)
     grad_y = cv2.Sobel(imagem, cv2.CV_64F, 0, 1, ksize=3)
 
-    if anguloSolicitado == 1:
+    if anguloSolicitado == '0':
         anguloSolicitado = [0, 180]
-    elif anguloSolicitado == 2:
+    elif anguloSolicitado == '45':
         anguloSolicitado = [45]
-    elif anguloSolicitado == 3:
+    elif anguloSolicitado == '90':
         anguloSolicitado = [90]
-    elif anguloSolicitado == 4:
+    elif anguloSolicitado == '135':
         anguloSolicitado = [135]
-    elif anguloSolicitado == 5:
+    elif anguloSolicitado == 'todos':
         anguloSolicitado = [0, 45, 90, 135, 180]
     else:
         print('Ângulo Solicitado inválido')
