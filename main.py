@@ -6,13 +6,13 @@ import regional
 import hough
 
 
-def process_image(imagem, algorithm):
+def process_image(imagem, algorithm, threshold):
     if algorithm == "local":
         return local.process(imagem)
     elif algorithm == "regional":
-        return regional.process(imagem)
+        return regional.process(imagem, threshold=threshold)
     elif algorithm == "global":
-        return hough.process(imagem)
+        return hough.process(imagem, threshold=threshold)
     else:
         raise ValueError(f"Unknown algorithm: {algorithm}")
 
@@ -26,6 +26,12 @@ def main() -> int:
         choices=["local", "regional", "global"],
         help="Image processing algorithm",
     )
+    parser.add_argument(
+        "--threshold",
+        type=int,
+        default=100,
+        help="Threshold for Hough Transform peak detection",
+    )
     args = parser.parse_args()
 
     input_image = cv2.imread(args.filename, cv2.IMREAD_GRAYSCALE)
@@ -34,7 +40,7 @@ def main() -> int:
         print(f"Error: Cannot load image {args.filename}")
         return 1
 
-    final_image = process_image(input_image, args.algorithm)
+    final_image = process_image(input_image, args.algorithm, args.threshold)
 
     cv2.imshow("Imagem PNG", final_image)
     while True:
