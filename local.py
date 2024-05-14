@@ -39,7 +39,7 @@ def correcao(imagem, rad, limiarReconstrucao):
 #       4 = 135º
 #       5 = 180º
 #       6 = Todos de 45º em 45º
-def process(imagem, limiarMagnitude = 80, anguloSolicitado = 3, limiarAngular = 10, limiarReconstrucao = 10):
+def process(imagem, limiarMagnitude = 80, anguloSolicitado = 3, limiarAngular = 10, limiarReconstrucao = 20):
     grad_x = cv2.Sobel(imagem, cv2.CV_64F, 1, 0, ksize=3)
     grad_y = cv2.Sobel(imagem, cv2.CV_64F, 0, 1, ksize=3)
 
@@ -82,20 +82,24 @@ def process(imagem, limiarMagnitude = 80, anguloSolicitado = 3, limiarAngular = 
 #    print(altura, largura)
 
 #    magnitude_normalizada = cv2.normalize(magnitude, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
-    magnitude = cv2.normalize(magnitude, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
+    imagem = cv2.normalize(magnitude, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
+    imagens = []
+
+    for i in range(0, len(rad)):
+        imagens.append(imagem.copy())
 
     for l in range(0, len(rad)):
         for i in range(0, altura - 1):
             for j in range(0, largura - 1):
-                if magnitude[i][j] >= limiarMagnitude and (rad[l] - limiarRad <= direcao[i][j] <= rad[l] + limiarRad):
-                    magnitude[i][j] = 255
+                if imagem[i][j] >= limiarMagnitude and (rad[l] - limiarRad <= direcao[i][j] <= rad[l] + limiarRad):
+                    imagens[l][i][j] = 255
     #                magnitude[i][j] = magnitude[i][j] 
                 else:
-                    magnitude[i][j] = 0
+                    imagens[l][i][j] = 0
 #                print(direcao[i][j])
-        magnitude = correcao(magnitude, rad, limiarReconstrucao)
+        #magnitude = correcao(magnitude, rad, limiarReconstrucao)
     
-    return magnitude
+    return imagens[0]
 
     anguloRotacao = 45
     centro = (largura // 2, altura // 2)
