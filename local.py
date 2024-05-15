@@ -169,6 +169,7 @@ def correcao(imagem, rad, limiarReconstrucao):
 #       4 = 135º
 #       5 = Todos de 45º em 45º
 def process(imagem, limiarMagnitude = 80, anguloSolicitado = 'todos', limiarAngular = 10, limiarReconstrucao = 20):
+    imagem = cv2.GaussianBlur(imagem, (5, 5), 0)
     grad_x = cv2.Sobel(imagem, cv2.CV_64F, 1, 0, ksize=3)
     grad_y = cv2.Sobel(imagem, cv2.CV_64F, 0, 1, ksize=3)
 
