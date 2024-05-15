@@ -6,13 +6,13 @@ import regional
 import hough
 
 
-def process_image(imagem, algorithm, threshold):
+def process_image(imagem, algorithm, args):
     if algorithm == "local":
-        return local.process(imagem)
+        return local.process(imagem, limiarMagnitude = args.magnitudeThreshold, anguloSolicitado = args.angle, limiarAngular = args.angularThreshold, limiarReconstrucao = args.reconstructionSize)
     elif algorithm == "regional":
-        return regional.process(imagem, threshold=threshold)
+        return regional.process(imagem, threshold=args.threshold)
     elif algorithm == "global":
-        return hough.process(imagem, threshold=threshold)
+        return hough.process(imagem, threshold=args.threshold)
     else:
         raise ValueError(f"Unknown algorithm: {algorithm}")
 
@@ -32,15 +32,45 @@ def main() -> int:
         default=100,
         help="Threshold for Hough Transform peak detection",
     )
+
+    parser.add_argument(
+        "--magnitudeThreshold",
+        type=int,
+        default=100,
+        help='Magnitude for local edge detection'
+    )
+
+    parser.add_argument(
+        "--angle",
+        type=str,
+        default='todos',
+        help='Angle for edge detection'
+    )
+
+    parser.add_argument(
+        "--angularThreshold",
+        type=int,
+        default=20,
+        help='Threshold of Angle for edge detection'
+    )
+
+    parser.add_argument(
+        "--reconstructionSize",
+        type=int,
+        default=5,
+        help='Max pixels for edge reconstruction'
+    )
+
     args = parser.parse_args()
 
     input_image = cv2.imread(args.filename, cv2.IMREAD_GRAYSCALE)
+    
 
     if input_image is None:
         print(f"Error: Cannot load image {args.filename}")
         return 1
 
-    final_image = process_image(input_image, args.algorithm, args.threshold)
+    final_image = process_image(input_image, args.algorithm, args)
 
     cv2.imshow("Imagem PNG", final_image)
     while True:
