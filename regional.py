@@ -129,7 +129,6 @@ def draw_polygons(image, points):
 def process(image, threshold=100, canny_threshold=(80, 150)):
     _, binary_image = cv2.threshold(image, canny_threshold[0], 255, cv2.THRESH_BINARY)
 
-    # edges = cv2.Canny(image, canny_threshold[0], canny_threshold[1])
     utils.show_img(binary_image, title="Image")
 
     # create a new empty image

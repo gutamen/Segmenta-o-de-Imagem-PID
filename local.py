@@ -9,12 +9,12 @@ def correcao(imagem, rad, limiarReconstrucao):
             k = 0
             buraco = False
             comeco = True
-            for j in range(0, largura):       
+            for j in range(0, largura):
                 if imagem[i][j] > 0 and not buraco:
                     comeco = False
                 elif imagem[i][j] == 0 and not comeco:
                     k += 1
-                    buraco = True 
+                    buraco = True
                     if k > limiarReconstrucao:
                         comeco = True
                         buraco = False
@@ -22,27 +22,21 @@ def correcao(imagem, rad, limiarReconstrucao):
                 elif imagem[i][j] > 0 and buraco:
                     buraco = False
                     for l in range(k, 0, -1):
-#                        print(str(i) + ' ' + str(j))
                         imagem[i][j - l] = 255
                     k = 0
-#                    comeco = True
 
-#                if buraco and j == largura - 1 and k > 0:
-#                    for l in range(k, 0, -1):
-#                        imagem[i][j - l] = 255
-
-#   Caso ângulo de 0º ou 180º
+    #   ângulo de 0º ou 180º
     elif rad == 0 or (3.13 <= rad <= 3.15):
         for i in range(0, largura):
             k = 0
             buraco = False
             comeco = True
-            for j in range(0, altura):       
+            for j in range(0, altura):
                 if imagem[j][i] > 0 and not buraco:
                     comeco = False
                 elif imagem[j][i] == 0 and not comeco:
                     k += 1
-                    buraco = True 
+                    buraco = True
                     if k > limiarReconstrucao:
                         comeco = True
                         buraco = False
@@ -50,17 +44,12 @@ def correcao(imagem, rad, limiarReconstrucao):
                 elif imagem[j][i] > 0 and buraco:
                     buraco = False
                     for l in range(k, 0, -1):
-#                        print(str(i) + ' ' + str(j))
                         imagem[j - l][i] = 255
                     k = 0
-#                    comeco = True
 
-#                if buraco and j == altura - 1 and k > 0:
-#                    for l in range(k, 0, -1):
-#                        imagem[j - l][i] = 255
+    #  ângulo de 45º
     elif 0.75 <= rad <= 0.8:
-#        print('aqui')
-        for i in range(largura -1, -1, -1):
+        for i in range(largura - 1, -1, -1):
             j = altura - 1
             l = i
             k = 0
@@ -71,7 +60,7 @@ def correcao(imagem, rad, limiarReconstrucao):
                     comeco = False
                 elif imagem[j][l] == 0 and not comeco:
                     k += 1
-                    buraco = True 
+                    buraco = True
                     if k > limiarReconstrucao:
                         comeco = True
                         buraco = False
@@ -83,7 +72,7 @@ def correcao(imagem, rad, limiarReconstrucao):
                     k = 0
                 j -= 1
                 l += 1
-        
+
         if altura > 1:
             for i in range(altura - 2, -1, -1):
                 j = i
@@ -96,7 +85,7 @@ def correcao(imagem, rad, limiarReconstrucao):
                         comeco = False
                     elif imagem[j][l] == 0 and not comeco:
                         k += 1
-                        buraco = True 
+                        buraco = True
                         if k > limiarReconstrucao:
                             comeco = True
                             buraco = False
@@ -108,10 +97,10 @@ def correcao(imagem, rad, limiarReconstrucao):
                         k = 0
                     j -= 1
                     l += 1
-                
+
+    #  ângulo de 135º
     elif 2.3 <= rad <= 2.4:
-#        print('aqui')
-        for i in range(largura -1, -1, -1):
+        for i in range(largura - 1, -1, -1):
             j = 0
             l = i
             k = 0
@@ -122,7 +111,7 @@ def correcao(imagem, rad, limiarReconstrucao):
                     comeco = False
                 elif imagem[j][l] == 0 and not comeco:
                     k += 1
-                    buraco = True 
+                    buraco = True
                     if k > limiarReconstrucao:
                         comeco = True
                         buraco = False
@@ -134,7 +123,7 @@ def correcao(imagem, rad, limiarReconstrucao):
                     k = 0
                 j += 1
                 l += 1
-        
+
         if altura > 1:
             for i in range(1, altura, 1):
                 j = i
@@ -147,7 +136,7 @@ def correcao(imagem, rad, limiarReconstrucao):
                         comeco = False
                     elif imagem[j][l] == 0 and not comeco:
                         k += 1
-                        buraco = True 
+                        buraco = True
                         if k > limiarReconstrucao:
                             comeco = True
                             buraco = False
@@ -162,36 +151,35 @@ def correcao(imagem, rad, limiarReconstrucao):
 
     return imagem
 
-#   anguloSolicitado
-#       1 = 0º e 180º
-#       2 = 45º
-#       3 = 90º
-#       4 = 135º
-#       5 = Todos de 45º em 45º
-def process(imagem, limiarMagnitude = 80, anguloSolicitado = 'todos', limiarAngular = 10, limiarReconstrucao = 20):
+
+def process(
+    imagem,
+    limiarMagnitude=80,
+    anguloSolicitado="todos",
+    limiarAngular=10,
+    limiarReconstrucao=20,
+):
     imagem = cv2.GaussianBlur(imagem, (5, 5), 0)
     grad_x = cv2.Sobel(imagem, cv2.CV_64F, 1, 0, ksize=3)
     grad_y = cv2.Sobel(imagem, cv2.CV_64F, 0, 1, ksize=3)
 
-    if anguloSolicitado == '0':
+    if anguloSolicitado == "0":
         anguloSolicitado = [0, 180]
-    elif anguloSolicitado == '45':
+    elif anguloSolicitado == "45":
         anguloSolicitado = [45]
-    elif anguloSolicitado == '90':
+    elif anguloSolicitado == "90":
         anguloSolicitado = [90]
-    elif anguloSolicitado == '135':
+    elif anguloSolicitado == "135":
         anguloSolicitado = [135]
-    elif anguloSolicitado == 'todos':
+    elif anguloSolicitado == "todos":
         anguloSolicitado = [0, 45, 90, 135, 180]
     else:
-        print('Ângulo Solicitado inválido')
+        print("Ângulo Solicitado inválido")
         return imagem
 
-
     # Valores
-#    limiarMagnitude = 80    # entre 0 e 255
-#    limiarAngular = 10       # ângulo necessário para considerar na linha
-    
+    #    limiarMagnitude = 80    # entre 0 e 255
+    #    limiarAngular = 10       # ângulo necessário para considerar na linha
 
     # Calcular a magnitude e a direção do gradiente
     magnitude = np.sqrt(grad_x**2 + grad_y**2)
@@ -200,16 +188,16 @@ def process(imagem, limiarMagnitude = 80, anguloSolicitado = 'todos', limiarAngu
 
     for i in range(0, altura - 1):
         for j in range(0, largura - 1):
-            if(direcao[i][j] < 0):
+            if direcao[i][j] < 0:
                 direcao[i][j] += np.pi
 
     rad = np.deg2rad(anguloSolicitado)
     limiarRad = np.deg2rad(limiarAngular)
-    
-#    print(rad)
-#    print(altura, largura)
 
-#    magnitude_normalizada = cv2.normalize(magnitude, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
+    #    print(rad)
+    #    print(altura, largura)
+
+    #    magnitude_normalizada = cv2.normalize(magnitude, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
     imagem = cv2.normalize(magnitude, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
     imagens = []
 
@@ -219,19 +207,22 @@ def process(imagem, limiarMagnitude = 80, anguloSolicitado = 'todos', limiarAngu
     for l in range(0, len(rad)):
         for i in range(0, altura):
             for j in range(0, largura):
-                if imagem[i][j] >= limiarMagnitude and (rad[l] - limiarRad <= direcao[i][j] <= rad[l] + limiarRad):
+                if imagem[i][j] >= limiarMagnitude and (
+                    rad[l] - limiarRad <= direcao[i][j] <= rad[l] + limiarRad
+                ):
                     imagens[l][i][j] = 255
-    #                magnitude[i][j] = magnitude[i][j] 
+                # magnitude[i][j] = magnitude[i][j]
                 else:
                     imagens[l][i][j] = 0
-#                print(direcao[i][j])
+
         imagens[l] = correcao(imagens[l], rad[l], limiarReconstrucao)
-    
+
     retorno = imagens[0]
     for i in range(1, len(imagens)):
         retorno = np.maximum(imagens[i], retorno)
 
     return retorno
+
 
 """
     anguloRotacao = 45
@@ -254,14 +245,3 @@ def process(imagem, limiarMagnitude = 80, anguloSolicitado = 'todos', limiarAngu
 
     return magnitude[mid_y-ch2:mid_y+ch2, mid_x-cw2:mid_x+cw2]
 """
-#    magnitude_normalizada = cv2.normalize(magnitude, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
-
-
-#    cv2.imshow('Imagem PNG', magnitude)
-#    cv2.waitKey(0)
-#    cv2.destroyAllWindows()
-
-#    np.savetxt('imagem_binaria.txt', imagem/255, fmt='%d')
-#    print(imagem/255)
-
-    

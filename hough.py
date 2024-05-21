@@ -33,96 +33,100 @@ def hough_transform(edge_image):
     return accumulator, thetas, rhos, max_dist
 
 
-def find_peaks(accumulator, threshold=100):
-    peaks = []
-    rho_indices, theta_indices = np.where(accumulator >= threshold)
-    for rho_idx, theta_idx in zip(rho_indices, theta_indices):
-        peaks.append((rho_idx, theta_idx))
+def find_peaks_by_amount(accumulator, num_peaks=10):
+    # Flatten the accumulator array and sort it by value in descending order
+    flat_accumulator = accumulator.flatten()
+    sorted_indices = np.argsort(flat_accumulator)[::-1]
+
+    # Get the indices of the top num_peaks values
+    top_indices = sorted_indices[:num_peaks]
+
+    # Convert the flat indices back to the 2D indices of the accumulator
+    peaks = [np.unravel_index(idx, accumulator.shape) for idx in top_indices]
+
     return peaks
+
 
 def draw_lines(image, line_segments):
     for line in line_segments:
         for i in range(len(line) - 1):
-            cv2.line(image, line[i], line[i + 1], 255, 2)
+            cv2.line(image, line[i], line[i + 1], 255, 1)
 
     return image
 
-def is_continuous(line_segments, min_length=30, gap=10):
-    continuous_lines = []
 
-    for line in line_segments:
-        if len(line) > min_length:
-            continuous_lines.append(line)
-
-    return continuous_lines
-
-
-def get_line_segments(edge_image, peaks, theta, max_dist):
+def get_line_segments(edge_image, peaks, thetas, max_dist):
     line_segments = []
+
+    # Get the coordinates of all edge points
+    y_idxs, x_idxs = np.nonzero(edge_image)
 
     for peak in peaks:
         rho_idx, theta_idx = peak
         rho = rho_idx - max_dist
-        theta_val = theta[theta_idx]
+        theta = thetas[theta_idx]
 
-        a = np.cos(theta_val)
-        b = np.sin(theta_val)
+        a = np.cos(theta)
+        b = np.sin(theta)
+
         points = []
-
-        for x in range(edge_image.shape[1]):
-            y = int((rho - x * a) / b)
-            if 0 <= y < edge_image.shape[0]:
-                if edge_image[y, x] > 0:
-                    points.append((x, y))
+        for x, y in zip(x_idxs, y_idxs):
+            calculated_rho = int(x * a + y * b)
+            if calculated_rho == rho:
+                points.append((x, y))
 
         if points:
             line_segments.append(points)
 
     return line_segments
 
-# def draw_lines(image, peaks, theta, max_dist):
-#     for peak in peaks:
-#         rho_idx, theta_idx = peak
-#         rho = rho_idx - max_dist
-#         theta_val = theta[theta_idx]
 
-#         a = np.cos(theta_val)
-#         b = np.sin(theta_val)
-#         x0 = a * rho
-#         y0 = b * rho
+def is_continuous(line_segments, max_gap=10):
+    continuous_lines = []
 
-#         x1 = int(x0 + 1000 * (-b))
-#         y1 = int(y0 + 1000 * (a))
-#         x2 = int(x0 - 1000 * (-b))
-#         y2 = int(y0 - 1000 * (a))
+    for line in line_segments:
+        if not line:
+            continue
 
-#         cv2.line(image, (x1, y1), (x2, y2), 255, 2)
+        current_segment = [line[0]]
+        for i in range(1, len(line)):
+            if np.linalg.norm(np.array(line[i]) - np.array(line[i - 1])) <= max_gap:
+                current_segment.append(line[i])
+            else:
+                if (
+                    len(current_segment) > 1
+                ):  # Ensure the segment has more than one point
+                    continuous_lines.append(current_segment)
+                current_segment = [
+                    line[i]
+                ]  # Start a new segment with the current point
 
-#     return image
+        if (
+            len(current_segment) > 1
+        ):  # Add the last segment if it has more than one point
+            continuous_lines.append(current_segment)
+
+    return continuous_lines
 
 
-def process(in_image, threshold=80):
-    utils.show_img(in_image, title="Input image")
-    
+def process(in_image, peaks=5, use_empty_image=True, use_continuous_lines=False, gap=10):
     # create an empty output image
-    image_with_lines = np.zeros_like(in_image)
+    base_iamge = np.zeros_like(in_image) if use_empty_image else in_image
 
     accumulator, thetas, rhos, max_dist = hough_transform(in_image)
 
     # 4) Examine a matriz acumuladora em busca de células com valores elevados;
-    peaks = find_peaks(accumulator, threshold=threshold)
-    line_segments = get_line_segments(in_image, peaks, thetas, max_dist)
+    peaks = find_peaks_by_amount(accumulator, num_peaks=peaks)
 
-    print(f"Found {len(line_segments)} line segments")
-    print(line_segments)
+    lines = get_line_segments(in_image, peaks, thetas, max_dist)
 
-    continuous_lines = is_continuous(line_segments)
+    if use_continuous_lines:
+        lines = is_continuous(lines, max_gap=gap)
 
-    image_with_lines = draw_lines(image_with_lines, continuous_lines)
-    # image_with_lines = draw_lines(image_with_lines, peaks, thetas, max_dist)
+    final_image = draw_lines(base_iamge, lines)
 
     utils.plot_hough_sinusoids(
         accumulator, rhos, thetas, title="hough_transform_accumulator.png"
     )
 
-    return image_with_lines
+    return final_image

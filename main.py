@@ -8,11 +8,23 @@ import hough
 
 def process_image(imagem, algorithm, args):
     if algorithm == "local":
-        return local.process(imagem, limiarMagnitude = args.magnitudeThreshold, anguloSolicitado = args.angle, limiarAngular = args.angularThreshold, limiarReconstrucao = args.reconstructionSize)
+        return local.process(
+            imagem,
+            limiarMagnitude=args.magnitude_threshold,
+            anguloSolicitado=args.angle,
+            limiarAngular=args.angular_threshold,
+            limiarReconstrucao=args.reconstruction_size,
+        )
     elif algorithm == "regional":
         return regional.process(imagem, threshold=args.threshold)
     elif algorithm == "global":
-        return hough.process(imagem, threshold=args.threshold)
+        return hough.process(
+            imagem,
+            peaks=args.peaks_amount,
+            use_empty_image=args.empty_image,
+            use_continuous_lines=args.continuous_lines,
+            gap=args.gap,
+        )
     else:
         raise ValueError(f"Unknown algorithm: {algorithm}")
 
@@ -30,47 +42,72 @@ def main() -> int:
         "--threshold",
         type=int,
         default=100,
-        help="Threshold for Hough Transform peak detection",
+        help="Threshold for Regional Edge Detection",
     )
-
     parser.add_argument(
-        "--magnitudeThreshold",
+        "--magnitude_threshold",
         type=int,
         default=100,
-        help='Magnitude for local edge detection'
+        help="Magnitude for local edge detection",
     )
-
     parser.add_argument(
-        "--angle",
-        type=str,
-        default='todos',
-        help='Angle for edge detection'
+        "--angle", type=str, default="todos", help="Angle for edge detection"
     )
-
     parser.add_argument(
-        "--angularThreshold",
+        "--angular_threshold",
         type=int,
         default=20,
-        help='Threshold of Angle for edge detection'
+        help="Threshold of Angle for edge detection",
     )
-
     parser.add_argument(
-        "--reconstructionSize",
+        "--reconstruction_size",
         type=int,
         default=5,
-        help='Max pixels for edge reconstruction'
+        help="Max pixels for edge reconstruction",
     )
-
+    parser.add_argument(
+        "--gap",
+        type=int,
+        default=10,
+        help="Gap used in global edge detection. Define the maximum distance between two points to be considered continuous.",
+    )
+    parser.add_argument(
+        "--peaks_amount",
+        type=int,
+        default=5,
+        help="Amount of peaks to be detected (Global Edge Detection)",
+    )
+    parser.add_argument(
+        "--save",
+        type=str,
+        help="Path to save the output image",
+    )
+    parser.add_argument(
+        "--continuous_lines",
+        action=argparse.BooleanOptionalAction,
+        type=bool,
+        default=False,
+        help="Use continuous lines in the output (Global Edge Detection)",
+    )
+    parser.add_argument(
+        "--empty_image",
+        action=argparse.BooleanOptionalAction,
+        type=bool,
+        default=False,
+        help="Use an empty image as base for the output (Global Edge Detection)",
+    )
     args = parser.parse_args()
 
     input_image = cv2.imread(args.filename, cv2.IMREAD_GRAYSCALE)
-    
 
     if input_image is None:
         print(f"Error: Cannot load image {args.filename}")
         return 1
 
     final_image = process_image(input_image, args.algorithm, args)
+
+    if args.save:
+        cv2.imwrite(args.save, final_image)
 
     cv2.imshow("Imagem PNG", final_image)
     while True:
