@@ -2,246 +2,241 @@ import cv2
 import numpy as np
 
 
-def correcao(imagem, rad, limiarReconstrucao):
-    altura, largura = imagem.shape[:2]
+def correction(image, rad, reconstructionThreshold):
+    height, widht = image.shape[:2]
     if 1.5 <= rad <= 1.6:
-        for i in range(0, altura):
+        for i in range(0, height):
             k = 0
-            buraco = False
-            comeco = True
-            for j in range(0, largura):
-                if imagem[i][j] > 0 and not buraco:
-                    comeco = False
-                elif imagem[i][j] == 0 and not comeco:
+            hole = False
+            start = True
+            for j in range(0, widht):
+                if image[i][j] > 0 and not hole:
+                    start = False
+                elif image[i][j] == 0 and not start:
                     k += 1
-                    buraco = True
-                    if k > limiarReconstrucao:
-                        comeco = True
-                        buraco = False
+                    hole = True
+                    if k > reconstructionThreshold:
+                        start = True
+                        hole = False
                         k = 0
-                elif imagem[i][j] > 0 and buraco:
-                    buraco = False
+                elif image[i][j] > 0 and hole:
+                    hole = False
                     for l in range(k, 0, -1):
-                        imagem[i][j - l] = 255
+                        image[i][j - l] = 255
                     k = 0
 
     #   ângulo de 0º ou 180º
     elif rad == 0 or (3.13 <= rad <= 3.15):
-        for i in range(0, largura):
+        for i in range(0, widht):
             k = 0
-            buraco = False
-            comeco = True
-            for j in range(0, altura):
-                if imagem[j][i] > 0 and not buraco:
-                    comeco = False
-                elif imagem[j][i] == 0 and not comeco:
+            hole = False
+            start = True
+            for j in range(0, height):
+                if image[j][i] > 0 and not hole:
+                    start = False
+                elif image[j][i] == 0 and not start:
                     k += 1
-                    buraco = True
-                    if k > limiarReconstrucao:
-                        comeco = True
-                        buraco = False
+                    hole = True
+                    if k > reconstructionThreshold:
+                        start = True
+                        hole = False
                         k = 0
-                elif imagem[j][i] > 0 and buraco:
-                    buraco = False
+                elif image[j][i] > 0 and hole:
+                    hole = False
                     for l in range(k, 0, -1):
-                        imagem[j - l][i] = 255
+                        image[j - l][i] = 255
                     k = 0
 
     #  ângulo de 45º
     elif 0.75 <= rad <= 0.8:
-        for i in range(largura - 1, -1, -1):
-            j = altura - 1
+        for i in range(widht - 1, -1, -1):
+            j = height - 1
             l = i
             k = 0
-            buraco = False
-            comeco = True
-            while j >= 0 and l < largura:
-                if imagem[j][l] > 0 and not buraco:
-                    comeco = False
-                elif imagem[j][l] == 0 and not comeco:
+            hole = False
+            start = True
+            while j >= 0 and l < widht:
+                if image[j][l] > 0 and not hole:
+                    start = False
+                elif image[j][l] == 0 and not start:
                     k += 1
-                    buraco = True
-                    if k > limiarReconstrucao:
-                        comeco = True
-                        buraco = False
+                    hole = True
+                    if k > reconstructionThreshold:
+                        start = True
+                        hole = False
                         k = 0
-                elif imagem[j][l] > 0 and buraco:
-                    buraco = False
+                elif image[j][l] > 0 and hole:
+                    hole = False
                     for t in range(k, 0, -1):
-                        imagem[j + t][l - t] = 255
+                        image[j + t][l - t] = 255
                     k = 0
                 j -= 1
                 l += 1
 
-        if altura > 1:
-            for i in range(altura - 2, -1, -1):
+        if height > 1:
+            for i in range(height - 2, -1, -1):
                 j = i
                 l = 0
                 k = 0
-                buraco = False
-                comeco = True
-                while j >= 0 and l < largura:
-                    if imagem[j][l] > 0 and not buraco:
-                        comeco = False
-                    elif imagem[j][l] == 0 and not comeco:
+                hole = False
+                start = True
+                while j >= 0 and l < widht:
+                    if image[j][l] > 0 and not hole:
+                        start = False
+                    elif image[j][l] == 0 and not start:
                         k += 1
-                        buraco = True
-                        if k > limiarReconstrucao:
-                            comeco = True
-                            buraco = False
+                        hole = True
+                        if k > reconstructionThreshold:
+                            start = True
+                            hole = False
                             k = 0
-                    elif imagem[j][l] > 0 and buraco:
-                        buraco = False
+                    elif image[j][l] > 0 and hole:
+                        hole = False
                         for t in range(k, 0, -1):
-                            imagem[j + t][l - t] = 255
+                            image[j + t][l - t] = 255
                         k = 0
                     j -= 1
                     l += 1
 
     #  ângulo de 135º
     elif 2.3 <= rad <= 2.4:
-        for i in range(largura - 1, -1, -1):
+        for i in range(widht - 1, -1, -1):
             j = 0
             l = i
             k = 0
-            buraco = False
-            comeco = True
-            while j < altura and l < largura:
-                if imagem[j][l] > 0 and not buraco:
-                    comeco = False
-                elif imagem[j][l] == 0 and not comeco:
+            hole = False
+            start = True
+            while j < height and l < widht:
+                if image[j][l] > 0 and not hole:
+                    start = False
+                elif image[j][l] == 0 and not start:
                     k += 1
-                    buraco = True
-                    if k > limiarReconstrucao:
-                        comeco = True
-                        buraco = False
+                    hole = True
+                    if k > reconstructionThreshold:
+                        start = True
+                        hole = False
                         k = 0
-                elif imagem[j][l] > 0 and buraco:
-                    buraco = False
+                elif image[j][l] > 0 and hole:
+                    hole = False
                     for t in range(k, 0, -1):
-                        imagem[j - t][l - t] = 255
+                        image[j - t][l - t] = 255
                     k = 0
                 j += 1
                 l += 1
 
-        if altura > 1:
-            for i in range(1, altura, 1):
+        if height > 1:
+            for i in range(1, height, 1):
                 j = i
                 l = 0
                 k = 0
-                buraco = False
-                comeco = True
-                while j < altura and l < largura:
-                    if imagem[j][l] > 0 and not buraco:
-                        comeco = False
-                    elif imagem[j][l] == 0 and not comeco:
+                hole = False
+                start = True
+                while j < height and l < widht:
+                    if image[j][l] > 0 and not hole:
+                        start = False
+                    elif image[j][l] == 0 and not start:
                         k += 1
-                        buraco = True
-                        if k > limiarReconstrucao:
-                            comeco = True
-                            buraco = False
+                        hole = True
+                        if k > reconstructionThreshold:
+                            start = True
+                            hole = False
                             k = 0
-                    elif imagem[j][l] > 0 and buraco:
-                        buraco = False
+                    elif image[j][l] > 0 and hole:
+                        hole = False
                         for t in range(k, 0, -1):
-                            imagem[j - t][l - t] = 255
+                            image[j - t][l - t] = 255
                         k = 0
                     j += 1
                     l += 1
 
-    return imagem
+    return image
 
 
 def process(
-    imagem,
-    limiarMagnitude=80,
-    anguloSolicitado="todos",
-    limiarAngular=10,
-    limiarReconstrucao=20,
+    image,
+    magnitudeThreshold=80,
+    requestedAngle="all",
+    angularThreshold=10,
+    reconstructionThreshold=20,
 ):
-    imagem = cv2.GaussianBlur(imagem, (5, 5), 0)
-    grad_x = cv2.Sobel(imagem, cv2.CV_64F, 1, 0, ksize=3)
-    grad_y = cv2.Sobel(imagem, cv2.CV_64F, 0, 1, ksize=3)
+    image = cv2.GaussianBlur(image, (5, 5), 0)
+    grad_x = cv2.Sobel(image, cv2.CV_64F, 1, 0, ksize=3)
+    grad_y = cv2.Sobel(image, cv2.CV_64F, 0, 1, ksize=3)
 
-    if anguloSolicitado == "0":
-        anguloSolicitado = [0, 180]
-    elif anguloSolicitado == "45":
-        anguloSolicitado = [45]
-    elif anguloSolicitado == "90":
-        anguloSolicitado = [90]
-    elif anguloSolicitado == "135":
-        anguloSolicitado = [135]
-    elif anguloSolicitado == "todos":
-        anguloSolicitado = [0, 45, 90, 135, 180]
+    if requestedAngle == "0":
+        requestedAngle = [0, 180]
+    elif requestedAngle == "45":
+        requestedAngle = [45]
+    elif requestedAngle == "90":
+        requestedAngle = [90]
+    elif requestedAngle == "135":
+        requestedAngle = [135]
+    elif requestedAngle == "all":
+        requestedAngle = [0, 45, 90, 135, 180]
     else:
-        print("Ângulo Solicitado inválido")
-        return imagem
+        print("Invalid Angle")
+        return image
 
     # Valores
-    #    limiarMagnitude = 80    # entre 0 e 255
-    #    limiarAngular = 10       # ângulo necessário para considerar na linha
+    #    magnitudeThreshold = 80    # entre 0 e 255
+    #    angularThreshold = 10       # ângulo necessário para considerar na linha
 
     # Calcular a magnitude e a direção do gradiente
     magnitude = np.sqrt(grad_x**2 + grad_y**2)
-    direcao = np.arctan2(grad_y, grad_x)
-    altura, largura = imagem.shape[:2]
+    direction = np.arctan2(grad_y, grad_x)
+    height, widht = image.shape[:2]
 
-    for i in range(0, altura - 1):
-        for j in range(0, largura - 1):
-            if direcao[i][j] < 0:
-                direcao[i][j] += np.pi
+    for i in range(0, height - 1):
+        for j in range(0, widht - 1):
+            if direction[i][j] < 0:
+                direction[i][j] += np.pi
 
-    rad = np.deg2rad(anguloSolicitado)
-    limiarRad = np.deg2rad(limiarAngular)
+    rad = np.deg2rad(requestedAngle)
+    radThreshold = np.deg2rad(angularThreshold)
 
-    #    print(rad)
-    #    print(altura, largura)
-
-    #    magnitude_normalizada = cv2.normalize(magnitude, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
-    imagem = cv2.normalize(magnitude, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
-    imagens = []
+    image = cv2.normalize(magnitude, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
+    images = []
 
     for i in range(0, len(rad)):
-        imagens.append(imagem.copy())
+        images.append(image.copy())
 
     for l in range(0, len(rad)):
-        for i in range(0, altura):
-            for j in range(0, largura):
-                if imagem[i][j] >= limiarMagnitude and (
-                    rad[l] - limiarRad <= direcao[i][j] <= rad[l] + limiarRad
+        for i in range(0, height):
+            for j in range(0, widht):
+                if image[i][j] >= magnitudeThreshold and (
+                    rad[l] - radThreshold <= direction[i][j] <= rad[l] + radThreshold
                 ):
-                    imagens[l][i][j] = 255
-                # magnitude[i][j] = magnitude[i][j]
+                    images[l][i][j] = 255
                 else:
-                    imagens[l][i][j] = 0
+                    images[l][i][j] = 0
 
-        imagens[l] = correcao(imagens[l], rad[l], limiarReconstrucao)
+        images[l] = correction(images[l], rad[l], reconstructionThreshold)
 
-    retorno = imagens[0]
-    for i in range(1, len(imagens)):
-        retorno = np.maximum(imagens[i], retorno)
+    returnImage = images[0]
+    for i in range(1, len(images)):
+        returnImage = np.maximum(images[i], returnImage)
 
-    return retorno
+    return returnImage
 
 
 """
     anguloRotacao = 45
-    centro = (largura // 2, altura // 2)
-    alturaRotacionada = int(largura * np.abs(np.sin(np.radians(anguloRotacao))) + altura * np.abs(np.cos(np.radians(anguloRotacao))))
-    larguraRotacionada = int(altura * np.abs(np.sin(np.radians(anguloRotacao))) + largura * np.abs(np.cos(np.radians(anguloRotacao))))
+    centro = (widht // 2, height // 2)
+    heightRotacionada = int(widht * np.abs(np.sin(np.radians(anguloRotacao))) + height * np.abs(np.cos(np.radians(anguloRotacao))))
+    widhtRotacionada = int(height * np.abs(np.sin(np.radians(anguloRotacao))) + widht * np.abs(np.cos(np.radians(anguloRotacao))))
     matrizRotacao = cv2.getRotationMatrix2D(centro, anguloRotacao, 1.0)
-    matrizRotacao[0, 2] += (larguraRotacionada - largura) / 2
-    matrizRotacao[1, 2] += (alturaRotacionada - altura) / 2
+    matrizRotacao[0, 2] += (widhtRotacionada - widht) / 2
+    matrizRotacao[1, 2] += (heightRotacionada - height) / 2
 
-    centro = (larguraRotacionada // 2, alturaRotacionada // 2)
-    magnitude = cv2.warpAffine(magnitude, matrizRotacao, (larguraRotacionada, alturaRotacionada), borderMode = cv2.BORDER_CONSTANT, borderValue = (0), flags=cv2.INTER_NEAREST)        
+    centro = (widhtRotacionada // 2, heightRotacionada // 2)
+    magnitude = cv2.warpAffine(magnitude, matrizRotacao, (widhtRotacionada, heightRotacionada), borderMode = cv2.BORDER_CONSTANT, borderValue = (0), flags=cv2.INTER_NEAREST)        
     print(magnitude.shape[:2])
     matrizRotacaoInversa = cv2.getRotationMatrix2D(centro, -anguloRotacao, 1.0)
 
-    magnitude = cv2.warpAffine(magnitude, matrizRotacaoInversa, (larguraRotacionada, alturaRotacionada), flags=cv2.INTER_NEAREST)       
+    magnitude = cv2.warpAffine(magnitude, matrizRotacaoInversa, (widhtRotacionada, heightRotacionada), flags=cv2.INTER_NEAREST)       
     
-    mid_x, mid_y = int(larguraRotacionada/2), int(alturaRotacionada/2)
-    cw2, ch2 = int(largura/2), int(altura/2)
+    mid_x, mid_y = int(widhtRotacionada/2), int(heightRotacionada/2)
+    cw2, ch2 = int(widht/2), int(height/2)
 
     return magnitude[mid_y-ch2:mid_y+ch2, mid_x-cw2:mid_x+cw2]
 """

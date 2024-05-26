@@ -10,10 +10,10 @@ def process_image(imagem, algorithm, args):
     if algorithm == "local":
         return local.process(
             imagem,
-            limiarMagnitude=args.magnitude_threshold,
-            anguloSolicitado=args.angle,
-            limiarAngular=args.angular_threshold,
-            limiarReconstrucao=args.reconstruction_size,
+            magnitudeThreshold=args.magnitude_threshold,
+            requestedAngle=args.angle,
+            angularThreshold=args.angular_threshold,
+            reconstructionThreshold=args.reconstruction_size,
         )
     elif algorithm == "regional":
         return regional.process(imagem, threshold=args.threshold)
@@ -51,7 +51,7 @@ def main() -> int:
         help="Magnitude for local edge detection",
     )
     parser.add_argument(
-        "--angle", type=str, default="todos", help="Angle for edge detection"
+        "--angle", type=str, default="all", help="Angle for edge detection"
     )
     parser.add_argument(
         "--angular_threshold",
