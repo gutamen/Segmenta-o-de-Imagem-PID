@@ -32,7 +32,7 @@ Each algorithm can be customized using various parameters to achieve the desired
 
 - `--threshold`: Threshold for Regional Edge Detection (default: 100).
 - `--magnitude_threshold`: Magnitude for Local Edge Detection (default: 100).
-- `--angle`: Angle for Local Edge Detection (default: "todos").
+- `--angle`: Angle for Local Edge Detection (default: "all").
 - `--angular_threshold`: Threshold of Angle for Local Edge Detection (default: 20).
 - `--reconstruction_size`: Max pixels for edge reconstruction in Local Edge Detection (default: 5).
 - `--gap`: Gap used in Global Edge Detection to define the maximum distance between two points to be considered continuous (default: 10).
@@ -48,6 +48,13 @@ Each algorithm can be customized using various parameters to achieve the desired
 The program provides a command-line interface (CLI) for ease of use. Below is the main structure of the command to run the program:
 
 ### Local
+```bash
+ python main.py images/tijolo.png local
+```
+
+```bash
+ python main.py images/tijolo.png local --angle 90 --magnitude_threshold 150
+```
 
 ### Regional
 
