@@ -51,15 +51,23 @@ def regional_edge_processing(edge_image, threshold):
 
     if len(points) < 2:
         return points
+    
+#    np.savetxt('points.txt', points, fmt='%d')
 
     # Find the centroid of the point set
     centroid = np.mean(points, axis=0)
+#    print()
 
     # Sort points by the angle of the vector from the centroid
     points = sorted(points, key=lambda p: angle_with_centroid(centroid, p))
-
-    # points = sorted(points, key=lambda p: (p[1], p[0]))  # Sort points by x, then y
+#    np.savetxt('points.txt', points, fmt='%d')
+#    print('aqui')
+    points = sorted(points, key=lambda p: (p[1], p[0]))  # Sort points by x, then y
     B, A = find_most_distant_points(points)
+#    B = points[-1]
+#    A = points[0]
+#    print(A)
+#    print(B)
 
     # Calculate the reference distance
     reference_distance = calculate_reference_distance(np.array(points))
@@ -80,7 +88,7 @@ def regional_edge_processing(edge_image, threshold):
     points_amount = len(points)
 
     # 8) Se a pilha Ab não estiver vazia, retornamos a (4);
-    while stack_Ab and reps <= 10:
+    while stack_Ab: #and reps <= 10:
         # 4) Calculamos os parâmetros da reta que passa pelos vértices no topo de Fe e no topo de Ab;
         P1, P2 = stack_Ab[-1], stack_Fe[-1]
         index_P1 = np.where((points == P1).all(axis=1))[0][0]
@@ -130,9 +138,12 @@ def process(image, threshold=100, canny_threshold=(80, 150)):
     _, binary_image = cv2.threshold(image, canny_threshold[0], 255, cv2.THRESH_BINARY)
 
     utils.show_img(binary_image, title="Image")
-
+    
+    image_with_polygon = binary_image
     # create a new empty image
     output_image = np.zeros_like(image)
+
+    image_with_polygon = output_image
 
     polygon_points = regional_edge_processing(binary_image, threshold)
     image_with_polygon = draw_polygons(output_image, polygon_points)

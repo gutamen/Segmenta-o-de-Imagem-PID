@@ -16,6 +16,11 @@ def process_image(imagem, algorithm, args):
             reconstructionThreshold=args.reconstruction_size,
         )
     elif algorithm == "regional":
+#        cv2.imshow("Imagem PNG", imagem)
+#        while True:
+#            if cv2.waitKey(1) & 0xFF == ord("q"):  # Press 'q' to close the window
+#               break
+#        cv2.destroyAllWindows()
         return regional.process(imagem, threshold=args.threshold)
     elif algorithm == "global":
         return hough.process(
